@@ -1,1 +1,75 @@
+class TreeNode{
+  saying:Saying;
+  left: TreeNode;
+  right: TreeNode;
+  height: number;
 
+  constructor(saying:Saying){
+    this.saying = saying;
+  }
+}
+
+class Saying{
+  hawaiian:string;
+  english: string;
+  hExplanation: string;
+  eExplanation: string;
+
+  constructor(hawaiian:string, english:string, hExplanation: string, eExplanation: string){
+    this.hawaiian = hawaiian;
+    this.english = english;
+    this.eExplanation = eExplanation;
+    this.hExplanation = hExplanation;
+  }
+
+  toString(){
+    return ""; //to do 
+  }
+}
+
+class SearchTree{
+  private root: TreeNode | null = null;;
+
+  insert(saying:Saying){
+    this.root = this.insertNode(this.root, saying);
+  }
+
+  insertNode(node:TreeNode | null, saying:Saying){
+    if(node === null){
+      return new TreeNode(saying);
+    }
+
+    if(saying.hawaiian < node.saying.hawaiian){
+      node.left = this.insertNode(node.left, saying); 
+    }
+    else if (saying.hawaiian > node.saying.hawaiian){
+      node.right = this.insertNode(node.right, saying);
+    }
+    return node;
+  }
+
+  
+  min() //finds the minimum value
+
+  max() //finds max value
+}
+
+
+class HawaiianDictionary{
+  tree: SearchTree; //may need to change
+
+  //insert new saying
+  insertSaying(saying:Saying){
+    this.tree.insert(saying);
+  }
+
+  //get first saying 
+  first():Saying | null{
+    return this.tree.min();
+  }
+
+  //get last saying
+  last(): Saying | null{
+    return this.tree.max();
+  }
+}
