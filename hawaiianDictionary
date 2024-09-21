@@ -1,75 +1,297 @@
-class TreeNode{
-  saying:Saying;
-  left: TreeNode;
-  right: TreeNode;
-  height: number;
-
-  constructor(saying:Saying){
-    this.saying = saying;
-  }
-}
-
-class Saying{
-  hawaiian:string;
+class Saying {
+  hawaiian: string;
   english: string;
   hExplanation: string;
   eExplanation: string;
 
-  constructor(hawaiian:string, english:string, hExplanation: string, eExplanation: string){
+  constructor(
+    hawaiian: string,
+    english: string,
+    hExplanation: string,
+    eExplanation: string
+  ) {
     this.hawaiian = hawaiian;
     this.english = english;
     this.eExplanation = eExplanation;
     this.hExplanation = hExplanation;
   }
 
-  toString(){
-    return ""; //to do 
+  toString() {
+    return ""; //to do
   }
 }
 
-class SearchTree{
-  private root: TreeNode | null = null;;
+class HawaiianDictionary {
+  tree: AVLTree; // Renamed.
 
-  insert(saying:Saying){
-    this.root = this.insertNode(this.root, saying);
+  constructor() {
+    // Added constructor.
+    this.tree = new AVLTree();
   }
-
-  insertNode(node:TreeNode | null, saying:Saying){
-    if(node === null){
-      return new TreeNode(saying);
-    }
-
-    if(saying.hawaiian < node.saying.hawaiian){
-      node.left = this.insertNode(node.left, saying); 
-    }
-    else if (saying.hawaiian > node.saying.hawaiian){
-      node.right = this.insertNode(node.right, saying);
-    }
-    return node;
-  }
-
-  
-  min() //finds the minimum value
-
-  max() //finds max value
-}
-
-
-class HawaiianDictionary{
-  tree: SearchTree; //may need to change
 
   //insert new saying
-  insertSaying(saying:Saying){
+  insertSaying(saying: Saying) {
     this.tree.insert(saying);
   }
 
-  //get first saying 
-  first():Saying | null{
+  //get first saying
+  first(): Saying | null {
     return this.tree.min();
   }
 
   //get last saying
-  last(): Saying | null{
+  last(): Saying | null {
     return this.tree.max();
+  }
+}
+
+// Balanced AVL Tree node.
+class AVLNode {
+  saying: Saying;
+  left: AVLNode | null = null;
+  right: AVLNode | null = null;
+  height = 0; // Have to initialise height.
+  parent: AVLNode | null = null; // Parent reference for ancestor function?
+
+  constructor(saying: Saying) {
+    this.saying = saying;
+  }
+}
+
+// AVL Tree to store sayings.
+class AVLTree {
+  private root: AVLNode | null = null;
+
+  // Insert a new saying.
+  insert(saying: Saying): void {
+    this.root = this.insertNode(this.root, saying);
+  }
+
+  // Recursive helper function to insert a new saying.
+  private insertNode(node: AVLNode | null, saying: Saying): AVLNode {
+    if (node === null) {
+      return new AVLNode(saying);
+    }
+
+    if (saying.hawaiian < node.saying.hawaiian) {
+      const newNode = this.insertNode(node.left, saying);
+      node.left = newNode;
+      newNode.parent = node; // Set parent reference
+    } else if (saying.hawaiian > node.saying.hawaiian) {
+      const newNode = this.insertNode(node.right, saying);
+      node.right = newNode;
+      newNode.parent = node; // Set parent reference
+    } else {
+      // Edge-case: duplicate sayings
+      return node;
+    }
+
+    node.height =
+      Math.max(this.getHeight(node.left), this.getHeight(node.right)) + 1;
+
+    return this.balanceNode(node);
+  }
+
+  // BALANCING FUNCTIONS
+  // Getting the balance of a node.
+  private getBalance(node: AVLNode): number {
+    if (node === null) {
+      return 0;
+    }
+    return this.getHeight(node.left) - this.getHeight(node.right);
+  }
+
+  // Getting the height of a node.
+  private getHeight(node: AVLNode | null): number {
+    return node ? node.height : 0;
+  }
+
+  // Left rotation.
+  private leftRotate(x: AVLNode): AVLNode {
+    const y = x.right!;
+    const T2 = y.left;
+
+    y.left = x;
+    x.right = T2;
+    
+    x.height = Math.max(this.getHeight(x.left), this.getHeight(x.right)) + 1;
+    y.height = Math.max(this.getHeight(y.left), this.getHeight(y.right)) + 1;
+
+    return y;
+  }
+
+  // Right rotation.
+  private rightRotate(y: AVLNode): AVLNode {
+    const x = y.left!;
+    const T2 = x.right;
+
+    x.right = y;
+    y.left = T2;
+
+    y.height = Math.max(this.getHeight(y.left), this.getHeight(y.right)) + 1;
+    x.height = Math.max(this.getHeight(x.left), this.getHeight(x.right)) + 1;
+
+    return x;
+  }
+
+  // Balancing a node.
+  private balanceNode(node: AVLNode): AVLNode {
+    const balance = this.getBalance(node);
+
+    // Left heavy rotation.
+    if (balance > 1 && node.left && this.getBalance(node.left) >= 0) {
+      return this.rightRotate(node);
+    }
+
+    // Left-Right rotation.
+    if (balance > 1 && node.left && this.getBalance(node.left) < 0) {
+      node.left = this.leftRotate(node.left);
+      return this.rightRotate(node);
+    }
+
+    // Right heavy rotation.
+    if (balance < -1 && node.right && this.getBalance(node.right) <= 0) {
+      return this.leftRotate(node);
+    }
+
+    // Right-Left rotation.
+    if (balance < -1 && node.right && this.getBalance(node.right) > 0) {
+      node.right = this.rightRotate(node.right);
+      return this.leftRotate(node);
+    }
+
+    return node;
+  }
+
+  // QUERY FUNCTIONS
+  // Checks for a Hawaiian saying.
+  member(hawaiian: string): boolean {
+    return this.memberNode(this.root, hawaiian);
+  }
+
+  protected memberNode(node: AVLNode | null, hawaiian: string): boolean {
+    if (node === null) {
+      return false;
+    }
+    if (hawaiian === node.saying.hawaiian) {
+      return true;
+    }
+    return hawaiian < node.saying.hawaiian
+      ? this.memberNode(node.left, hawaiian)
+      : this.memberNode(node.right, hawaiian);
+  }
+
+  // Search for sayings with a specific Hawaiian word.
+  MeHua(word: string): Saying[] {
+    const sayings: Saying[] = [];
+    this.MeHuaNode(this.root, word, sayings);
+    return sayings;
+  }
+
+  private MeHuaNode(
+    node: AVLNode | null,
+    word: string,
+    sayings: Saying[]
+  ): void {
+    if (node !== null) {
+      this.MeHuaNode(node.left, word, sayings);
+      if (
+        node.saying.hawaiian.includes(word) ||
+        node.saying.english.includes(word)
+      ) {
+        sayings.push(node.saying);
+      }
+      this.MeHuaNode(node.right, word, sayings);
+    }
+  }
+
+  // Search for sayings with a specific English word.
+  WithWord(word: string): Saying[] {
+    const sayings: Saying[] = [];
+    this.WithWordNode(this.root, word, sayings);
+    return sayings;
+  }
+
+  private WithWordNode(
+    node: AVLNode | null,
+    word: string,
+    sayings: Saying[]
+  ): void {
+    if (node !== null) {
+      this.WithWordNode(node.left, word, sayings);
+      if (
+        node.saying.hawaiian.includes(word) ||
+        node.saying.english.includes(word)
+      ) {
+        sayings.push(node.saying);
+      }
+      this.WithWordNode(node.right, word, sayings);
+    }
+  }
+
+  // Find the first saying.
+  min(): Saying | null {
+    return this.minNode(this.root);
+  }
+
+  private minNode(node: AVLNode | null): Saying | null {
+    if (node === null) return null;
+    while (node.left !== null) {
+      node = node.left;
+    }
+    return node.saying;
+  }
+
+  // Find the last saying.
+  max(): Saying | null {
+    return this.maxNode(this.root);
+  }
+
+  private maxNode(node: AVLNode | null): Saying | null {
+    if (node === null) return null;
+    while (node.right !== null) {
+      node = node.right;
+    }
+    return node.saying;
+  }
+
+  // Find the predecessor of a given Saying.
+  predecessor(saying: Saying): Saying | null {
+    const node = this.findNode(this.root, saying.hawaiian);
+    if (!node) return null;
+
+    if (node.left) {
+      return this.maxNode(node.left);
+    }
+
+    let ancestor = this.root;
+    let predecessor: Saying | null = null;
+
+    while (ancestor !== null) {
+      if (saying.hawaiian < ancestor.saying.hawaiian) {
+        ancestor = ancestor.left;
+      } else if (saying.hawaiian > ancestor.saying.hawaiian) {
+        predecessor = ancestor.saying;
+        ancestor = ancestor.right;
+      } else {
+        break;
+      }
+    }
+    return predecessor;
+  }
+
+  // Helper function, find nodes for predecessor/ancestor functions.
+  private findNode(node: AVLNode | null, hawaiian: string): AVLNode | null {
+    if (node === null) {
+      return null;
+    }
+
+    if (hawaiian === node.saying.hawaiian) {
+      return node;
+    } else if (hawaiian < node.saying.hawaiian) {
+      return this.findNode(node.left, hawaiian);
+    } else {
+      return this.findNode(node.right, hawaiian);
+    }
   }
 }
