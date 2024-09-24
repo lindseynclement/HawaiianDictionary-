@@ -1,9 +1,23 @@
+/**
+ * AVL Tree Implementation for Storing Hawaiian Sayings
+ * This class implements an AVL tree to store Hawaiian sayings
+ * along with their English translations and explanations.
+ *
+ * The tree ensures efficient operations (O(log n)) for insertion and searches, and
+ * supports Unicode characters for proper handling of Hawaiian language special characters.
+ * 
+ * Citation: AVL Tree algorithm adapted from [Introduction to Algorithms, Chapter 13].
+ */
+
+/*saying object that holds a Hawaiian saying, its English translation, 
+and their respective explanations*/
 class Saying {
   hawaiian: string;
   english: string;
   hExplanation: string;
   eExplanation: string;
 
+  // constructor for the Saying object
   constructor(
     hawaiian: string,
     english: string,
@@ -16,6 +30,8 @@ class Saying {
     this.hExplanation = hExplanation;
   }
 
+
+  //converts the Saying object to a string format 
   toString() {
     return "Saying: " +
             "Hawaiian = '" + this.hawaiian + '\'' +
@@ -26,38 +42,39 @@ class Saying {
   }
 }
 
+//class that acts as a wrapper for the AVLTree for storing sayings
 class HawaiianDictionary {
-  tree: AVLTree; // Renamed.
+  tree: AVLTree; 
 
+  //constuctor that initializes the AVL tree for the dictionary 
   constructor() {
-    // Added constructor.
     this.tree = new AVLTree();
   }
 
-  //insert new saying
+  //inserts new saying into AVL tree
   insertSaying(saying: Saying) {
     this.tree.insert(saying);
   }
 
-  //get first saying
+  //returns first saying in the dictionary 
   first(): Saying | null {
     return this.tree.min();
   }
 
-  //get last saying
+  //returns last saying in the dictionary 
   last(): Saying | null {
     return this.tree.max();
   }
 }
 
-// Balanced AVL Tree node.
+// class that represents a balanced node in the AVL Tree 
 class AVLNode {
   saying: Saying;
   left: AVLNode | null = null;
   right: AVLNode | null = null;
-  height = 0; // Have to initialise height.
-  parent: AVLNode | null = null; // Parent reference for ancestor function?
+  height = 0; // initialises height
 
+  //constructor to initialize the AVLNode with a string
   constructor(saying: Saying) {
     this.saying = saying;
   }
@@ -67,16 +84,17 @@ class AVLNode {
 class AVLTree {
   private root: AVLNode | null = null;
 
-  // Insert a new saying.
+  // inserts a new saying into the tree
   insert(saying: Saying): void {
     this.root = this.insertNode(this.root, saying);
   }
 
+  //normalizes a string using Unicode NFC to handle special characters
   private normalize(phrase:string):string{
     return phrase.normalize("NFC");
   }
 
-  // Recursive helper function to insert a new saying.
+  // recursive helper function to insert a new saying into the tree
   private insertNode(node: AVLNode | null, saying: Saying): AVLNode {
     if (node === null) {
       return new AVLNode(saying);
@@ -87,13 +105,11 @@ class AVLTree {
     if (normalizedHawaiian < normalizedHawaiianNode) {
       const newNode = this.insertNode(node.left, saying);
       node.left = newNode;
-      newNode.parent = node; // Set parent reference
     } else if (normalizedHawaiian > normalizedHawaiianNode) {
       const newNode = this.insertNode(node.right, saying);
       node.right = newNode;
-      newNode.parent = node; // Set parent reference
     } else {
-      // Edge-case: duplicate sayings
+      // duplicate sayings are ignored
       return node;
     }
 
@@ -104,7 +120,8 @@ class AVLTree {
   }
 
   // BALANCING FUNCTIONS
-  // Getting the balance of a node.
+  
+  // calculates the balance factor of a node 
   private getBalance(node: AVLNode): number {
     if (node === null) {
       return 0;
@@ -112,12 +129,12 @@ class AVLTree {
     return this.getHeight(node.left) - this.getHeight(node.right);
   }
 
-  // Getting the height of a node.
+  // returns the height of a node
   private getHeight(node: AVLNode | null): number {
     return node ? node.height : 0;
   }
 
-  // Left rotation.
+  // performs a left rotation on the node to balance the tree
   private leftRotate(x: AVLNode): AVLNode {
     const y = x.right!;
     const T2 = y.left;
@@ -131,7 +148,7 @@ class AVLTree {
     return y;
   }
 
-  // Right rotation.
+  // performs a right rotation on the node to balance the tree
   private rightRotate(y: AVLNode): AVLNode {
     const x = y.left!;
     const T2 = x.right;
@@ -145,7 +162,7 @@ class AVLTree {
     return x;
   }
 
-  // Balancing a node.
+  // balances the subtree rooted at the given node 
   private balanceNode(node: AVLNode): AVLNode {
     const balance = this.getBalance(node);
 
@@ -175,7 +192,8 @@ class AVLTree {
   }
 
   // QUERY FUNCTIONS
-  // Checks for a Hawaiian saying.
+
+  // checks for a Hawaiian saying
   member(hawaiian: string): boolean {
     return this.memberNode(this.root, hawaiian);
   }
@@ -192,7 +210,7 @@ class AVLTree {
       : this.memberNode(node.right, hawaiian);
   }
 
-  // Search for sayings with a specific Hawaiian word.
+  // searches for sayings with a specific Hawaiian word
   MeHua(word: string): Saying[] {
     const sayings: Saying[] = [];
     this.MeHuaNode(this.root, word, sayings);
@@ -216,7 +234,7 @@ class AVLTree {
     }
   }
 
-  // Search for sayings with a specific English word.
+  // searches for sayings with a specific English word
   WithWord(word: string): Saying[] {
     const sayings: Saying[] = [];
     this.WithWordNode(this.root, word, sayings);
@@ -240,7 +258,7 @@ class AVLTree {
     }
   }
 
-  // Find the first saying.
+  // finds the first saying in the datbase
   min(): Saying | null {
     return this.minNode(this.root);
   }
@@ -253,7 +271,7 @@ class AVLTree {
     return node.saying;
   }
 
-  // Find the last saying.
+  // finds the last saying in the database
   max(): Saying | null {
     return this.maxNode(this.root);
   }
@@ -266,7 +284,7 @@ class AVLTree {
     return node.saying;
   }
 
-  // Find the predecessor of a given Saying.
+  // finds the predecessor of a given Saying
   predecessor(saying: Saying): Saying | null {
     const node = this.findNode(this.root, saying.hawaiian);
     if (!node) return null;
@@ -290,7 +308,7 @@ class AVLTree {
     }
     return predecessor;
   }
-  //Find the successor of a given saying
+  // finds the successor of a given saying
   successor(saying:Saying): Saying | null {
     const node = this.findNode(this.root, saying.hawaiian);
     if (!node) return null;
@@ -317,7 +335,7 @@ class AVLTree {
     return successor;
   }
 
-  // Helper function, find nodes for predecessor/ancestor functions.
+  // felper function, finds nodes for predecessor/ancestor functions
   private findNode(node: AVLNode | null, hawaiian: string): AVLNode | null {
     if (node === null) {
       return null;
