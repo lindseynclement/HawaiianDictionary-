@@ -18,10 +18,10 @@ class Saying {
 
   toString() {
     return "Saying: " +
-            "Hawaiian ='" + this.hawaiian + '\'' +
-            ", English ='" + this.english + '\'' +
-            ", Hawaiian Explanation ='" + this.hExplanation + '\'' +
-            ", Englsih Explanation ='" + this.eExplanation + '\'' +
+            "Hawaiian = '" + this.hawaiian + '\'' +
+            ", English = '" + this.english + '\'' +
+            ", Hawaiian Explanation = '" + this.hExplanation + '\'' +
+            ", Englsih Explanation = '" + this.eExplanation + '\'' +
             '}';
   }
 }
