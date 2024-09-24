@@ -17,7 +17,12 @@ class Saying {
   }
 
   toString() {
-    return ""; //to do
+    return "Saying: " +
+            "Hawaiian ='" + this.hawaiian + '\'' +
+            ", English ='" + this.english + '\'' +
+            ", Hawaiian Explanation ='" + this.hExplanation + '\'' +
+            ", Englsih Explanation ='" + this.eExplanation + '\'' +
+            '}';
   }
 }
 
@@ -67,17 +72,23 @@ class AVLTree {
     this.root = this.insertNode(this.root, saying);
   }
 
+  private normalize(phrase:string):string{
+    return phrase.normalize("NFC");
+  }
+
   // Recursive helper function to insert a new saying.
   private insertNode(node: AVLNode | null, saying: Saying): AVLNode {
     if (node === null) {
       return new AVLNode(saying);
     }
+    const normalizedHawaiian = this.normalize(saying.hawaiian);
+    const normalizedHawaiianNode = this.normalize(node.saying.hawaiian);
 
-    if (saying.hawaiian < node.saying.hawaiian) {
+    if (normalizedHawaiian < normalizedHawaiianNode) {
       const newNode = this.insertNode(node.left, saying);
       node.left = newNode;
       newNode.parent = node; // Set parent reference
-    } else if (saying.hawaiian > node.saying.hawaiian) {
+    } else if (normalizedHawaiian > normalizedHawaiianNode) {
       const newNode = this.insertNode(node.right, saying);
       node.right = newNode;
       newNode.parent = node; // Set parent reference
@@ -196,8 +207,8 @@ class AVLTree {
     if (node !== null) {
       this.MeHuaNode(node.left, word, sayings);
       if (
-        node.saying.hawaiian.includes(word) ||
-        node.saying.english.includes(word)
+        node.saying.hawaiian.includes(word) //||
+        //node.saying.english.includes(word)
       ) {
         sayings.push(node.saying);
       }
@@ -220,7 +231,7 @@ class AVLTree {
     if (node !== null) {
       this.WithWordNode(node.left, word, sayings);
       if (
-        node.saying.hawaiian.includes(word) ||
+        //node.saying.hawaiian.includes(word) ||
         node.saying.english.includes(word)
       ) {
         sayings.push(node.saying);
@@ -279,6 +290,32 @@ class AVLTree {
     }
     return predecessor;
   }
+  //Find the successor of a given saying
+  successor(saying:Saying): Saying | null {
+    const node = this.findNode(this.root, saying.hawaiian);
+    if (!node) return null;
+
+    if(node.right){
+        return this.minNode(node.right);
+    }
+
+    let ancestor = this.root;
+    let successor:Saying | null = null;
+
+    while(ancestor !== null){
+        if(saying.hawaiian < ancestor.saying.hawaiian){
+            successor = ancestor.saying;
+            ancestor = ancestor.left;
+        }
+        else if (saying.hawaiian > ancestor.saying.hawaiian){
+            ancestor = ancestor.right;
+        }
+        else{
+            break;
+        }
+    }
+    return successor;
+  }
 
   // Helper function, find nodes for predecessor/ancestor functions.
   private findNode(node: AVLNode | null, hawaiian: string): AVLNode | null {
@@ -295,3 +332,29 @@ class AVLTree {
     }
   }
 }
+
+//testing functionality 
+
+const dictionary = new AVLTree();
+const saying1 = new Saying("A hui hou kākou", "Until we all meet again", "Hawaiian explanation", "English explanation");
+const saying2 = new Saying("Mālama ʻāina", "Take care of the Earth", "Hawaiian explanation", "English explanation");
+
+dictionary.insert(saying1);
+dictionary.insert(saying2);
+
+//print all sayings
+console.log("All sayings:");
+const sayingsWithMalama = dictionary.MeHua("Mālama");
+sayingsWithMalama.forEach(phrase => console.log(phrase.toString()));
+
+//first and last sayings
+console.log("First saying:", dictionary.min()?.toString());
+console.log("Last saying:", dictionary.max()?.toString());
+
+//search by Hawaiian word 'ʻāina' and English word 'earth'
+console.log("Sayings with 'ʻāina':", dictionary.MeHua("ʻāina"));
+console.log("Sayings with 'Earth':", dictionary.WithWord("Earth"));
+
+// Predecessor and Successor of 'Mālama ʻāina'
+console.log("Predecessor of 'Mālama ʻāina':", dictionary.predecessor(new Saying("Mālama ʻāina", "", "", ""))?.toString());
+console.log("Successor of 'Mālama ʻāina':", dictionary.successor(new Saying("Mālama ʻāina", "", "", ""))?.toString());
