@@ -11,6 +11,7 @@
 
 /*saying object that holds a Hawaiian saying, its English translation, 
 and their respective explanations*/
+//created and worked on by Lindsey 
 class Saying {
   hawaiian: string;
   english: string;
@@ -43,6 +44,7 @@ class Saying {
 }
 
 //class that acts as a wrapper for the AVLTree for storing sayings
+//created by Lindsey worked on by Jayden
 class HawaiianDictionary {
   tree: AVLTree; 
 
@@ -68,6 +70,7 @@ class HawaiianDictionary {
 }
 
 // class that represents a balanced node in the AVL Tree 
+//created and worked on by Jayden
 class AVLNode {
   saying: Saying;
   left: AVLNode | null = null;
@@ -81,6 +84,7 @@ class AVLNode {
 }
 
 // AVL Tree to store sayings.
+//created and worked on by Jayden
 class AVLTree {
   private root: AVLNode | null = null;
 
@@ -352,6 +356,7 @@ class AVLTree {
 }
 
 //testing functionality 
+//created and worked on by Lindsey 
 
 const dictionary = new AVLTree();
 const saying1 = new Saying("A hui hou kākou", "Until we all meet again", "Hawaiian explanation", "English explanation");
